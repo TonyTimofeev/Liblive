@@ -1,0 +1,8 @@
+beautifulsoup4
+Django
+django-crispy-forms
+lxml
+requests
+selenium
+selenium-requests
+xlwt

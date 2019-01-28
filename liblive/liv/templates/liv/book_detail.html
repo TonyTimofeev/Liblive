@@ -1,0 +1,33 @@
+{% extends "liv/base.html" %}
+{% block content %}
+
+{% if object.user == user %}
+    <h2><a href="{% url 'liv:author-detail' object.author.pk %}">{{ object.author }}</a> : {{ object.title }}</h2>
+        {% for tag in object.tags.all %}
+            <a href="{% url 'liv:genre-detail' tag.id %}">{{ tag }}</a> |
+        {% endfor %}
+    <br>
+    <div class="container-fluid p-4">
+        <div class="row">
+            <div class="col-sm-3 pull-right">
+                <img src="{{ object.cover }}" class="img-responsive" alt="" />
+            </div>
+            <div class="col-sm-9">  
+                <p>{{ object.description }}</p>
+                <br>
+                <p>Рейтинг книги {{ object.rating }}</p>
+            </div>
+        </div>
+    </div>
+    <ul>
+    {% if object.actualbook_set.all %}
+        {% for b in object.actualbook_set.all %}
+            <li>{{ b.title }} <br> {{ b.author }} <br> {{ b.notes }}</li>
+        {% endfor %}
+    {% else %}
+        <p>Данной книги в библиотеке нет</p>
+    {% endif %}
+    </ul>
+{% endif %}
+    
+{% endblock %}

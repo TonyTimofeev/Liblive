@@ -1,0 +1,9 @@
+{% extends 'liv/base.html' %}
+{% block content %}
+    <h2>Вы разлогинились</h2>
+        <div class="border-top pt-3">
+            <small class="text-muted">
+                <a class="ml-2" href="{% url 'users:login' %}">Авторизоваться?</a>
+            </small>
+        </div>
+{% endblock %}

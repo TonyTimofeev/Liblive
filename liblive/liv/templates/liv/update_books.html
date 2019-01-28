@@ -1,0 +1,12 @@
+{% extends 'liv/base.html' %}
+{% block content %}
+
+<div class="container">
+
+    <p>На данной страницу Вы можете синхронизировать список книг с livelib и обновить их наличие в библиотеке. Это может занять время.</p>
+
+    <a href="{% url 'liv:update_all' %}" class="btn btn-primary btn-lg btn-block mt-2">Обновить список книг</a>
+</div>
+
+
+{% endblock %}

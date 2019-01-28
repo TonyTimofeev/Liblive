@@ -1,0 +1,52 @@
+{% extends 'liv/base.html' %}
+{% block content %}
+
+<div class="card-deck">
+    {% for book in list_of_books|slice:":3" %}
+        <div class="col-sm-4">
+            <div class="card">
+                <img class="card-img-top" src="{{ book.cover }}" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title">{{ book.title}}</h5>
+                    <p class="card-text">{{ book.description|slice:":250" }}...</p>
+                    <a href="{% url 'liv:book-detail' book.pk %}" class="btn btn-primary btn-block">Подробнее</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="card-deck">
+    {% for book in list_of_books|slice:"3:" %}
+        <div class="col-sm-4">
+            <div class="card">
+                <img class="card-img-top" src="{{ book.cover }}" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title">{{ book.title}}</h5>
+                    <p class="card-text">{{ book.description|slice:":250" }}...</p>
+                    <a href="{% url 'liv:book-detail' book.pk %}" class="btn btn-primary btn-block">Подробнее</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% if not user.is_anonymous %}
+    <div class="text-center">
+            {% if list_of_books.has_previous %}
+                <a class="btn btn-info mb-4" href="?page=1">&laquo; первая</a>
+                <a class="btn btn-info mb-4" href="?page={{ list_of_books.previous_page_number }}">предыдущая</a>
+            {% endif %}
+
+            <span class="btn btn-info mb-4">
+                Страница {{ list_of_books.number }} из {{ list_of_books.paginator.num_pages }}
+            </span>
+
+            {% if list_of_books.has_next %}
+                <a class="btn btn-info mb-4" href="?page={{ list_of_books.next_page_number }}">следующая</a>
+                <a class="btn btn-info mb-4" href="?page={{ list_of_books.paginator.num_pages }}">последняя &raquo;</a>
+            {% endif %}
+    </div>
+{% endif %}
+
+{% endblock %}

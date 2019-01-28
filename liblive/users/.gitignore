@@ -1,0 +1,6 @@
+/__init__.py-tpl
+/admin.py-tpl
+/apps.py-tpl
+/models.py-tpl
+/tests.py-tpl
+/views.py-tpl

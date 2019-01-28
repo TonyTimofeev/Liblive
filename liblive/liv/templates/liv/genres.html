@@ -1,0 +1,26 @@
+{% extends 'liv/base.html' %}
+{% block content %}
+
+{% for genre, values in dict_of_genres.items %}
+    <div class="accordion" id="accordionExample">  
+        <div class="card">
+            <div class="card-header" id="headingOne">
+                <h2 class="mb-0">
+                    <!-- cut нужен для работы свёртывания по id -->
+                    <button class="btn" type="button" data-toggle="collapse" aria-expanded="true" data-target=#{{ genre|cut:" "|cut:"," }}>
+                        {{ genre }}
+                    </button>
+                </h2>
+            </div>        
+            {% for i in values %}
+                <div class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample" id={{ genre|cut:" "|cut:"," }}>
+                    <div class="card-body">
+                        <a href="{% url 'liv:book-detail' i.id %}">{{ i }}</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>  
+    </div> 
+{% endfor %}
+
+{% endblock %}

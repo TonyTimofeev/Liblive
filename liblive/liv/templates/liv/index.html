@@ -1,0 +1,71 @@
+{% extends 'liv/base.html' %}
+{% block content %}
+
+{% if user.is_anonymous %}
+    <div class="mt-3 ml-3">
+        <p>Liblive это сервис, позволяющий узнать наличие в библиотеке книг из списка желаемого с сайта livelib. 
+           <br>
+           После создания учетной записи необходимо указать в профиле свой никнейм с сайта livelib. Используя кнопку "Обновить список книг" сайт начнет синхронизацию информации с сайта livelib и бибилотеки. Как результат, по завершению на главной странице будет список книг с пометкой какие из них досупны в библиотеке. 
+        </p>
+    </div>
+{% endif %}
+
+{% if not user.is_anonymous %}
+    <a href="{% url 'liv:update-books' %}" class="btn btn-primary btn-lg btn-block mt-2">Обновить список книг</a>
+    <ul>
+        {% for book in list_of_books %}
+            {% if book.user == user %}
+                <li><h2><a href="{% url 'liv:author-detail' book.author.pk %}">{{ book.author }}</a> : {{ book.title }}</h2></li>
+                {% for tag in book.tags.all %}
+                    | <a href="{% url 'liv:genre-detail' tag.id %}">{{ tag }}</a> |
+                {% endfor %}
+                <br>
+                <div class="container-fluid mt-3">
+                    <div class="row">
+                        <div class="col-sm-3 pull-right">
+                            <img src="{{ book.cover }}" class="img-responsive" alt="" />
+                        </div>
+                        <div class="col-sm-9">  
+                            <p>{{ book.description }}</p>
+                            <br>
+                            <p>Рейтинг книги {{ book.rating }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-light btn-lg btn-block mt-2" data-toggle="collapse" data-target=#{{ book.linkkey }}>
+                    Наличие в библиотеке
+                </button>
+                <div class="collapse" id={{ book.linkkey }}>
+                    {% if book.actualbook_set.all %}
+                        <ul>
+                            {% for b in book.actualbook_set.all %}
+                                <li>{{ b.title }} <br> {{ b.author }} <br> {{ b.notes }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>Данной книги нет в библиотеке</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </ul>
+
+    <div class="text-center">
+            {% if list_of_books.has_previous %}
+                <a class="btn btn-info mb-4" href="?page=1">&laquo; первая</a>
+                <a class="btn btn-info mb-4" href="?page={{ list_of_books.previous_page_number }}">предыдущая</a>
+            {% endif %}
+
+            <span class="btn btn-info mb-4">
+                Страница {{ list_of_books.number }} из {{ list_of_books.paginator.num_pages }}
+            </span>
+
+            {% if list_of_books.has_next %}
+                <a class="btn btn-info mb-4" href="?page={{ list_of_books.next_page_number }}">следующая</a>
+                <a class="btn btn-info mb-4" href="?page={{ list_of_books.paginator.num_pages }}">последняя &raquo;</a>
+            {% endif %}
+    </div>
+{% endif %}
+
+{% endblock %}

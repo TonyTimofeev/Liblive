@@ -1,0 +1,13 @@
+{% extends "liv/base.html" %}
+{% block content %}
+
+<h1>{{ author.name }}</h1>
+<ul>
+    {% for book in author.bookfromlivelib_set.all %}
+        {% if book.user == user %}
+            <li><a href="{% url 'liv:book-detail' book.id %}">{{ book }}</a></li>
+        {% endif %}
+    {% endfor %}
+</ul>
+    
+{% endblock %}

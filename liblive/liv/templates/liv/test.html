@@ -1,0 +1,49 @@
+{% extends 'liv/base.html' %}
+{% block content %}
+
+this is <h3>{{user}}</h3> page
+<br><br>
+
+<a href="{% url 'liv:addauthors' %}">Add Authors</a>
+<br><br>
+<a href="{% url 'liv:addgenres' %}">Add Genres</a>
+<br><br>
+<a href="{% url 'liv:addbooks' %}">Add Books</a>
+<br><br>
+<a href="{% url 'liv:addactualbooks' %}">Add Actual Books</a>
+<br><br>
+<a href="{% url 'liv:getting_books' %}">geeting_books</a>
+<br><br>
+<a href="{% url 'liv:close_up' %}">close_up</a>
+<br><br>
+<a href="{% url 'liv:parse_nekrasovka' %}">parse_nekrasovka</a>
+<br><br>
+<a href="{% url 'liv:delete_books' %}">delete_books</a>
+<br><br>
+
+{{ user.username }}
+it is a user.link - {{ user.profile.link }}
+
+{% for book in user.bookfromlivelib_set.all %}
+<ul>
+    <h3>{{ book }} {{ book.pk }}</h3>
+    {% for b in book.actualbook_set.all %}
+        <li>{{ b.title }} <br> {{ b.author }} <br> {{ b.notes }}</li>
+    {% endfor %}
+</ul>
+{% endfor %}
+
+
+
+
+
+<ul>
+    {% for book in user.bookfromlivelib_set.all %}
+    <li>{{ book.author }}</li>
+    {% endfor %}
+</ul>
+
+
+
+
+{% endblock %}
