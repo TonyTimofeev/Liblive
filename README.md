@@ -1,6 +1,6 @@
 # Liblive
 
-Liblive is a service, that allows you to find out about the availability of book from your livelib`s wishlist in the library.
+Liblive is a service, that allows you to check an availability of a book from your livelib`s wishlist in the library.
 
 # Getting started
 
