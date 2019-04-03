@@ -90,7 +90,6 @@ def UpdateBooks(request):
 
 @login_required
 def UpdateAll(request):
-    print('START'*5)
     if not os.path.exists('files_of_users'):
         os.mkdir('files_of_users')
     try:
@@ -104,14 +103,12 @@ def UpdateAll(request):
         delete_books(request)
         messages.success(request, 'Список обновлён')
     except:
-        # сделать красным (alert класс в bootstar)
         messages.warning(request, 'Произошла ошибка')
     return render(request, 'liv/update_books.html')
 
 
 @login_required
 def getting_books(request):
-    print('start getting_books')
     links_of_books = []
 
     userlink = request.user.profile.link
@@ -129,7 +126,6 @@ def getting_books(request):
         time.sleep(2)
         page += 1
         upd_link = link + '~' + str(page)
-        print(upd_link)
         r = requests.get(upd_link)
         soup = BeautifulSoup(r.content, 'lxml')
         books = soup.find_all('a', class_='brow-book-name with-cycle')
@@ -141,13 +137,11 @@ def getting_books(request):
         for i in links_of_books:
             f.write(i + '\n')
 
-    print('finish getting_books')
     return render(request, 'liv/test.html')
 
 
 @login_required
 def close_up(request):
-    print('start close_up')
     webdriver = Firefox()
 
     userlink = request.user.profile.link
@@ -163,12 +157,7 @@ def close_up(request):
             for link in f: ll.append(link)
             for link in reversed(ll):
                 link = link.replace('\n', '')
-                print('\n', link)
                 if link not in list_of_books:
-                    print('Обрабатывается', link)
-                    # sleep против капчи
-                    time.sleep(5)
-
                     r = webdriver.request('GET', link)
                     soup = BeautifulSoup(r.content, 'lxml')
 
@@ -216,19 +205,13 @@ def close_up(request):
                     data.append(overview)
                     with open(f'files_of_users/list_of_books_{userlink}.txt', 'w') as f:
                         json.dump(data, f)
-                    print('Обработана')
-
-                else:
-                    print('Уже обработана', link)
 
     webdriver.close()
-    print('finish close_up')
     return render(request, 'liv/test.html')
 
 
 @login_required
 def parse_nekrasovka(request):
-    print('start parse nekrasovka')
     actual_in_lib = []
 
     userlink = request.user.profile.link
@@ -246,9 +229,6 @@ def parse_nekrasovka(request):
         url = f'http://opac.nekrasovka.ru/opacg2/?size=3&iddb=5&label0=FT&query0=&prefix1=AND&label1=TI&query1={book}&prefix2=AND&label2=AU&query2=&lang=&yearFrom=&yearTo=&_action=bibl%3Asearch%3Aadvanced'
         r = requests.get(url)
         soup = BeautifulSoup(r.content, 'lxml')
-
-        print(url)
-        print(author)
 
         if soup.find('table', class_='biblSearchRecordsTable id_biblSearchRecordsTableContainer'):
             tbodys = soup.find_all('tbody')
@@ -268,20 +248,15 @@ def parse_nekrasovka(request):
                     res.append(data)
                     res.append(key)
                     actual_in_lib.append(res)
-                    print(title, 'найдена')
-        else:
-            print(title, 'не найдена')
 
     with open(f'files_of_users/actual_in_lib_{userlink}.txt', 'w') as f:
         json.dump(actual_in_lib, f)
 
-    print('finish parse nekrasovka')
     return render(request, 'liv/test.html')
 
 
 @login_required
 def addauthors(request):
-    print('start Add Authors')
     userlink = request.user.profile.link
     with open(f'files_of_users/list_of_books_{userlink}.txt', 'r') as f:
         data = json.load(f)
@@ -291,13 +266,11 @@ def addauthors(request):
                     a = Author()
                     a.name = author
                     a.save()
-    print('finish Add Authors')
     return render(request, 'liv/test.html')
 
 
 @login_required
 def addgenres(request):
-    print('start Add Genres')
     userlink = request.user.profile.link
     with open(f'files_of_users/list_of_books_{userlink}.txt', 'r') as f:
         data = json.load(f)
@@ -307,13 +280,11 @@ def addgenres(request):
                             g = Genre()
                             g.name = tag
                             g.save()
-    print('finish Add Genres')
     return render(request, 'liv/test.html')
 
 
 @login_required
 def addbooks(request):
-    print('start Add Books and Genres for Books')
     userlink = request.user.profile.link
     with open(f'files_of_users/list_of_books_{userlink}.txt', 'r') as f:
         data = json.load(f)
@@ -342,14 +313,12 @@ def addbooks(request):
                     b.linkkey += n
                 b.save()
 
-    print('finish Add Books and Genres for Books')
     return render(request, 'liv/test.html')
 
 
 # после добавления авторов, жанров и книг в базу
 @login_required
 def addactualbooks(request):
-    print('start Add ActualBooks')
     userlink = request.user.profile.link
     with open(f'files_of_users/actual_in_lib_{userlink}.txt', 'r') as f:
         data = json.load(f)
@@ -363,13 +332,11 @@ def addactualbooks(request):
                 a.user = User.objects.get(username=request.user)
                 a.save()
     
-    print('finish Add ActualBooks')
     return render(request, 'liv/test.html')
 
 
 @login_required
 def delete_books(request):
-    print('start delete_books')
     list_of_books = []
     userlink = request.user.profile.link
     current_user = request.user
@@ -381,7 +348,6 @@ def delete_books(request):
         if book.link not in list_of_books:
             book.delete()
     
-    print('finish delete_books')
     return render(request, 'liv/test.html')
 
 
