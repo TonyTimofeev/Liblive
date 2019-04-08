@@ -16,7 +16,7 @@ from selenium import webdriver
 from seleniumrequests import Firefox
 
 
-def IndexView(request):
+def index_view(request):
     current_user = request.user
     if current_user.is_anonymous:
         return render(request, 'liv/index.html')
@@ -29,7 +29,7 @@ def IndexView(request):
 
 
 @login_required
-def AuthorView(request):
+def author_view(request):
     dict_of_authors = dict()
     current_user = request.user
     for author in Author.objects.all():
@@ -49,8 +49,8 @@ class AuthorDetailView(LoginRequiredMixin, generic.DetailView):
 
 
 @login_required
-def BooksView(request):
-    # нельзя отделять пагинатор
+def books_view(request):
+    # Paginator must be tied with current_user.bookfromlivelib_set.all()
     current_user = request.user
     lob = current_user.bookfromlivelib_set.all()
     paginator = Paginator(lob, 15)
@@ -65,7 +65,7 @@ class BookDetailView(LoginRequiredMixin ,generic.DetailView):
 
 
 @login_required
-def GenresView(request):
+def genres_view(request):
     dict_of_genres = dict()
     current_user = request.user
     for genre in Genre.objects.all().order_by('name'):
@@ -84,22 +84,22 @@ class GenreDetailView(LoginRequiredMixin ,generic.DetailView):
 
 
 @login_required
-def UpdateBooks(request):    
+def update_books(request):    
     return render(request, 'liv/update_books.html')
 
 
 @login_required
-def UpdateAll(request):
+def update_all(request):
     if not os.path.exists('files_of_users'):
         os.mkdir('files_of_users')
     try:
         getting_books(request)
         close_up(request)
         parse_nekrasovka(request)
-        addauthors(request)
-        addgenres(request)
-        addbooks(request)
-        addactualbooks(request)
+        add_authors(request)
+        add_genres(request)
+        add_books(request)
+        add_actual_books(request)
         delete_books(request)
         messages.success(request, 'Список обновлён')
     except:
@@ -111,8 +111,8 @@ def UpdateAll(request):
 def getting_books(request):
     links_of_books = []
 
-    userlink = request.user.profile.link
-    link = f'https://www.livelib.ru/reader/{userlink}/wish/listview/smalllist/'
+    user_link = request.user.profile.link
+    link = f'https://www.livelib.ru/reader/{user_link}/wish/listview/smalllist/'
     r = requests.get(link)
     soup = BeautifulSoup(r.content, 'lxml')
     
@@ -122,8 +122,6 @@ def getting_books(request):
         num_of_pages = 1
 
     for page in range(int(num_of_pages)):
-        # sleep против капчи
-        time.sleep(2)
         page += 1
         upd_link = link + '~' + str(page)
         r = requests.get(upd_link)
@@ -133,7 +131,7 @@ def getting_books(request):
         for book in books:
             links_of_books.append('https://www.livelib.ru/' + book['href'])
 
-    with open(f'files_of_users/links_of_books_{userlink}.txt', 'w', encoding='utf-8') as f:
+    with open(f'files_of_users/links_of_books_{user_link}.txt', 'w', encoding='utf-8') as f:
         for i in links_of_books:
             f.write(i + '\n')
 
@@ -144,18 +142,18 @@ def getting_books(request):
 def close_up(request):
     webdriver = Firefox()
 
-    userlink = request.user.profile.link
+    user_link = request.user.profile.link
 
-    # список для реверса
-    ll = []
-    with open(f'files_of_users/links_of_books_{userlink}.txt', 'r', encoding='utf-8') as f:
-        if not os.path.exists(f'files_of_users/list_of_books_{userlink}.txt'):
-            open(f'files_of_users/list_of_books_{userlink}.txt', 'w', encoding='utf 8').close()
-        with open (f'files_of_users/list_of_books_{userlink}.txt', 'r', encoding='utf 8') as d:
+    # list need for reverse
+    reversed_list = []
+    with open(f'files_of_users/links_of_books_{user_link}.txt', 'r', encoding='utf-8') as f:
+        if not os.path.exists(f'files_of_users/list_of_books_{user_link}.txt'):
+            open(f'files_of_users/list_of_books_{user_link}.txt', 'w', encoding='utf 8').close()
+        with open (f'files_of_users/list_of_books_{user_link}.txt', 'r', encoding='utf 8') as d:
             list_of_books = d.read()
-            # нужен реверс, т.к. в список ссылок новые книги идут первыми, а не последними 
-            for link in f: ll.append(link)
-            for link in reversed(ll):
+            # there is need reverse, because new books go to the link list first, not last
+            for link in f: reversed_list.append(link)
+            for link in reversed(reversed_list):
                 link = link.replace('\n', '')
                 if link not in list_of_books:
                     r = webdriver.request('GET', link)
@@ -196,14 +194,14 @@ def close_up(request):
                     overview.append(description)
 
                     data = []
-                    if os.stat(f'files_of_users/list_of_books_{userlink}.txt').st_size != 0:
-                        with open(f'files_of_users/list_of_books_{userlink}.txt', 'r') as f:
+                    if os.stat(f'files_of_users/list_of_books_{user_link}.txt').st_size != 0:
+                        with open(f'files_of_users/list_of_books_{user_link}.txt', 'r') as f:
                             old = json.load(f)
                             for i in old:
                                 data.append(i)
 
                     data.append(overview)
-                    with open(f'files_of_users/list_of_books_{userlink}.txt', 'w') as f:
+                    with open(f'files_of_users/list_of_books_{user_link}.txt', 'w') as f:
                         json.dump(data, f)
 
     webdriver.close()
@@ -214,7 +212,7 @@ def close_up(request):
 def parse_nekrasovka(request):
     actual_in_lib = []
 
-    userlink = request.user.profile.link
+    user_link = request.user.profile.link
     current_user = User.objects.get(username=request.user)
 
     for book in current_user.bookfromlivelib_set.all():
@@ -249,16 +247,16 @@ def parse_nekrasovka(request):
                     res.append(key)
                     actual_in_lib.append(res)
 
-    with open(f'files_of_users/actual_in_lib_{userlink}.txt', 'w') as f:
+    with open(f'files_of_users/actual_in_lib_{user_link}.txt', 'w') as f:
         json.dump(actual_in_lib, f)
 
     return render(request, 'liv/test.html')
 
 
 @login_required
-def addauthors(request):
-    userlink = request.user.profile.link
-    with open(f'files_of_users/list_of_books_{userlink}.txt', 'r') as f:
+def add_authors(request):
+    user_link = request.user.profile.link
+    with open(f'files_of_users/list_of_books_{user_link}.txt', 'r') as f:
         data = json.load(f)
         for book in data:
             for author in book[1]:
@@ -270,9 +268,9 @@ def addauthors(request):
 
 
 @login_required
-def addgenres(request):
-    userlink = request.user.profile.link
-    with open(f'files_of_users/list_of_books_{userlink}.txt', 'r') as f:
+def add_genres(request):
+    user_link = request.user.profile.link
+    with open(f'files_of_users/list_of_books_{user_link}.txt', 'r') as f:
         data = json.load(f)
         for book in data:
                 for tag in book[3]:
@@ -284,9 +282,9 @@ def addgenres(request):
 
 
 @login_required
-def addbooks(request):
-    userlink = request.user.profile.link
-    with open(f'files_of_users/list_of_books_{userlink}.txt', 'r') as f:
+def add_books(request):
+    user_link = request.user.profile.link
+    with open(f'files_of_users/list_of_books_{user_link}.txt', 'r') as f:
         data = json.load(f)
         for i in data:
             if not BookFromLivelib.objects.filter(title=i[2]).filter(author=Author.objects.get(name=i[1][0])).filter(user=User.objects.get(username=request.user)):
@@ -300,13 +298,13 @@ def addbooks(request):
                 b.user = User.objects.get(username=request.user)
                 b.save()
 
-                # жанры добавляются после создания книги
+                # genre must be created after a book
                 for g in i[3]:
                     genre = Genre.objects.get(name=g)
                     b.tags.add(genre)
                 b.save()
 
-                # ключ для str id в html
+                # linkkey need for string `id` in html code
                 dd = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six', 7: 'seven', 8: 'eight', 9: 'nine', 0: 'zero'}
                 for i in list(str(b.pk)):
                     n = dd.get(int(i))
@@ -316,11 +314,11 @@ def addbooks(request):
     return render(request, 'liv/test.html')
 
 
-# после добавления авторов, жанров и книг в базу
+# after adding authors, genres and books in the db
 @login_required
-def addactualbooks(request):
-    userlink = request.user.profile.link
-    with open(f'files_of_users/actual_in_lib_{userlink}.txt', 'r') as f:
+def add_actual_books(request):
+    user_link = request.user.profile.link
+    with open(f'files_of_users/actual_in_lib_{user_link}.txt', 'r') as f:
         data = json.load(f)
         for i in data:
             if not ActualBook.objects.filter(title=i[1]).filter(author=i[0]).filter(notes=i[2]):
@@ -338,9 +336,9 @@ def addactualbooks(request):
 @login_required
 def delete_books(request):
     list_of_books = []
-    userlink = request.user.profile.link
+    user_link = request.user.profile.link
     current_user = request.user
-    with open(f'files_of_users/links_of_books_{userlink}.txt', 'r', encoding='utf-8') as f:
+    with open(f'files_of_users/links_of_books_{user_link}.txt', 'r', encoding='utf-8') as f:
         for i in f:
             list_of_books.append(i.strip())
     book_from_base = current_user.bookfromlivelib_set.all()
